@@ -1,0 +1,145 @@
+{
+  "name": "AI Web Extractor and Summarizer",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "550a52d0-f405-4ee4-bfdd-9389e4f8c561",
+      "name": "When chat message received",
+      "webhookId": "b8c7898b-4d3c-4e11-90fc-91862d1274d8"
+    },
+    {
+      "parameters": {
+        "url": "={{$json.chatInput}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "3352385b-075f-49af-bf52-581f82248d1b",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $json.data || \"\";\n\n// Extract title\nconst titleMatch = html.match(/<title>(.*?)<\\/title>/i);\nconst title = titleMatch ? titleMatch[1] : \"No title found\";\n\n// Remove HTML tags\nconst cleanText = html\n  .replace(/<script[\\s\\S]*?<\\/script>/gi, \"\")\n  .replace(/<style[\\s\\S]*?<\\/style>/gi, \"\")\n  .replace(/<[^>]+>/g, \" \")\n  .replace(/\\s+/g, \" \")\n  .trim();\n\nreturn [\n  {\n    json: {\n      title,\n      text: cleanText.substring(0, 6000)\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        0
+      ],
+      "id": "2418fbc9-ec5f-4971-a0af-588719d50689",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a helpful assistant.\n\nSummarize the following webpage content clearly in 5 bullet points.\n\nTitle:\n{{ $json.title }}\n\nContent:\n{{ $json.text }}",
+        "messages": {
+          "messageValues": []
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        560,
+        0
+      ],
+      "id": "b2dfaa05-9229-4c33-a947-16157a14c068",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        496,
+        208
+      ],
+      "id": "62ff714b-d0b7-499d-bf35-9c785df16881",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "Zi4bYaaRZdbEnMGK",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "cb065519-783c-4126-842d-0310ebc84657",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0ddb865b7efd783ca206fed8d23484bdd7ef53653c1078db4f088e008233f864"
+  },
+  "nodeGroups": [],
+  "id": "LhqKClMifIr7JKH2",
+  "tags": []
+}

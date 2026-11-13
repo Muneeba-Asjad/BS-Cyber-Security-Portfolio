@@ -1,0 +1,62 @@
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+public class Question2 {
+
+    public static void main(String[] args) {
+        // Step 1: Create a standard HashMap
+        Map<String, String> standardMap = new HashMap<>();
+
+        // Convert the HashMap into a thread-safe synchronized map
+        Map<String, String> studentMap = Collections.synchronizedMap(standardMap);
+
+        // Step 2: Create a thread pool with 3 threads
+        ExecutorService executor = Executors.newFixedThreadPool(3);
+
+        // Step 3: Submit 3 tasks (one per thread) to insert records
+        for (int i = 1; i <= 3; i++) {
+            final int threadId = i;
+            executor.submit(() -> {
+                for (int j = 1; j <= 100; j++) {
+                    // Unique Key example: T1-S1, T2-S50, T3-S100
+                    String studentId = "T" + threadId + "-S" + j;
+                    String studentName = "Student_" + threadId + "_" + j;
+
+                    studentMap.put(studentId, studentName);
+                }
+            });
+        }
+
+        // Step 4: Gracefully shut down the executor and wait for completion
+        executor.shutdown();
+        try {
+            // Wait up to 5 seconds for all threads to finish their work
+            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                System.out.println("Threads did not finish in time.");
+            }
+        } catch (InterruptedException e) {
+            System.err.println("Execution was interrupted: " + e.getMessage());
+            Thread.currentThread().interrupt();
+        }
+
+        // Step 5: Verify expected vs actual counts
+        int totalThreads = 3;
+        int recordsPerThread = 100;
+        int expectedEntries = totalThreads * recordsPerThread;
+        int actualEntries = studentMap.size();
+
+        System.out.println("=== Multithreading Map Synchronization Results ===");
+        System.out.println("Expected Entries : " + expectedEntries);
+        System.out.println("Actual Entries   : " + actualEntries);
+
+        if (expectedEntries == actualEntries) {
+            System.out.println("Success: All student records were safely inserted!");
+        } else {
+            System.out.println("Error: Data loss detected due to concurrency issues.");
+        }
+    }
+}

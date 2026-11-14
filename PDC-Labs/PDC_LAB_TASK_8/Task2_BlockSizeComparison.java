@@ -7,3 +7,6 @@ public class Task2_BlockSizeComparison {
 
     }
 }
+
+// Define matrix size
+int N = 2048;

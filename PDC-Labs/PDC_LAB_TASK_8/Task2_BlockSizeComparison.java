@@ -10,3 +10,5 @@ public class Task2_BlockSizeComparison {
 
 // Define matrix size
 int N = 2048;
+// Different block sizes
+int[] blockSizes = { 16, 32, 64, 128, 256 };

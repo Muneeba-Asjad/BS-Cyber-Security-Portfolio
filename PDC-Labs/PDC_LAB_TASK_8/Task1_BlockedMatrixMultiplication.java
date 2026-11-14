@@ -22,3 +22,5 @@ double[][] B = new double[N][N];
 
 // Create result matrix
 double[][] C = new double[N][N];
+// Create random number generator
+Random rand = new Random(42);

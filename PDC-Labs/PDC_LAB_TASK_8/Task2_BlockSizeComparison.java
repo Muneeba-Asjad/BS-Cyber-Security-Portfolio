@@ -20,3 +20,10 @@ double[][] B = new double[N][N];
 double[][] C = new double[N][N];
 // Create random number generator
 Random rand = new Random(42);
+        // Initializing matrices A and B
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                A[i][j] = rand.nextDouble();
+                B[i][j] = rand.nextDouble();
+            }
+        }

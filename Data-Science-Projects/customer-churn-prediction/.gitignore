@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+.ipynb_checkpoints/
+*.pyc
+.env
+Untitled.ipynb
+data/WA_Fn-UseC_-Telco-Customer-Churn.csv
+data/customer_churn.csv
+data/customer_churn_cleaned.csv

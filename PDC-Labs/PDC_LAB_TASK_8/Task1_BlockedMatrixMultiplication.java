@@ -30,4 +30,8 @@ Random rand = new Random(42);        // Fill input matrices with random values
             }
         }
         A[i][j] = rand.nextDouble();
-        B[i][j] = rand.nextDouble();
+        B[i][j] = rand.nextDouble();      
+        
+        System.out.println("Blocked Matrix Multiplication");
+        System.out.println("Matrix Size: " + N + " x " + N);
+        System.out.println("Block Size: " + BLOCK_SIZE);

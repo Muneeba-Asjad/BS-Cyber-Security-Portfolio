@@ -38,3 +38,11 @@ Random rand = new Random(42);        // Fill input matrices with random values
 
                 // Starting execution time
         long startTime = System.nanoTime();
+                // Divide matrices into blocks
+        for (int ii = 0; ii < N; ii += BLOCK_SIZE) {
+            for (int jj = 0; jj < N; jj += BLOCK_SIZE) {
+                for (int kk = 0; kk < N; kk += BLOCK_SIZE) {
+
+                }
+            }
+        }

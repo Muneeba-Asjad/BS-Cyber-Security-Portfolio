@@ -27,3 +27,5 @@ Random rand = new Random(42);
                 B[i][j] = rand.nextDouble();
             }
         }
+                // Store execution times
+        double[] times = new double[5];

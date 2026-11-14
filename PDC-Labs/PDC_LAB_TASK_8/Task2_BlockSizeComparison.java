@@ -16,3 +16,5 @@ int[] blockSizes = { 16, 32, 64, 128, 256 };
 double[][] A = new double[N][N];
 // Creating second matrix
 double[][] B = new double[N][N];
+// Creating result matrix
+double[][] C = new double[N][N];

@@ -12,3 +12,5 @@ public class Task2_BlockSizeComparison {
 int N = 2048;
 // Different block sizes
 int[] blockSizes = { 16, 32, 64, 128, 256 };
+// Creating first matrix
+double[][] A = new double[N][N];

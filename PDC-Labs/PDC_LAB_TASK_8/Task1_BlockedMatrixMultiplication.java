@@ -16,3 +16,6 @@ int BLOCK_SIZE = 64;
 
 // Create first matrix
 double[][] A = new double[N][N];
+
+// Create second matrix
+double[][] B = new double[N][N];

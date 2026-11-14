@@ -35,3 +35,6 @@ Random rand = new Random(42);        // Fill input matrices with random values
         System.out.println("Blocked Matrix Multiplication");
         System.out.println("Matrix Size: " + N + " x " + N);
         System.out.println("Block Size: " + BLOCK_SIZE);
+
+                // Starting execution time
+        long startTime = System.nanoTime();

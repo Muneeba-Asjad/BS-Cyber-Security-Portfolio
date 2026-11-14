@@ -45,6 +45,28 @@ public class Task2_BlockSizeComparison {
         for (int j = 0; j < N; j++) {
             C[i][j] = 0;
         }
-}System.out.println("Testing Block Size: "+BLOCK_SIZE);
+    }System.out.println("Testing Block Size: "+BLOCK_SIZE);
 
-long startTime = System.nanoTime();
+    long startTime = System.nanoTime();
+    // Blocked Matrix Multiplication
+    for(
+    int ii = 0;ii<N;ii+=BLOCK_SIZE)
+    {
+                for (int jj = 0; jj < N; jj += BLOCK_SIZE) {
+                    for (int kk = 0; kk < N; kk += BLOCK_SIZE) {
+
+                        for (int i = ii; i < ii + BLOCK_SIZE; i++) {
+                            for (int j = jj; j < jj + BLOCK_SIZE; j++) {
+
+                                double sum = C[i][j];
+
+                                for (int k = kk; k < kk + BLOCK_SIZE; k++) {
+                                    sum += A[i][k] * B[k][j];
+                                }
+
+                                C[i][j] = sum;
+                            }
+                        }
+                    }
+                }
+            }

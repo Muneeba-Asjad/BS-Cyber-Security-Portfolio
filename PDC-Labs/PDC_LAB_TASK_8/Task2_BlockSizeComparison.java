@@ -42,7 +42,9 @@ public class Task2_BlockSizeComparison {
     for(
     int i = 0;i<N;i++)
     {
-                for (int j = 0; j < N; j++) {
-                    C[i][j] = 0;
-                }
-            }
+        for (int j = 0; j < N; j++) {
+            C[i][j] = 0;
+        }
+}System.out.println("Testing Block Size: "+BLOCK_SIZE);
+
+long startTime = System.nanoTime();

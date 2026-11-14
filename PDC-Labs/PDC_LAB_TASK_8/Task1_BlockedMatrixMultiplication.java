@@ -49,14 +49,23 @@ public class Task1_BlockedMatrixMultiplication {
     for(
     int i = ii;i<ii+BLOCK_SIZE;i++)
     {
-                        for (int j = jj; j < jj + BLOCK_SIZE; j++) {
+        for (int j = jj; j < jj + BLOCK_SIZE; j++) {
 
-                            double sum = C[i][j];
+            double sum = C[i][j];
 
-                            for (int k = kk; k < kk + BLOCK_SIZE; k++) {
-                                sum += A[i][k] * B[k][j];
-                            }
+            for (int k = kk; k < kk + BLOCK_SIZE; k++) {
+                sum += A[i][k] * B[k][j];
+            }
 
-                            C[i][j] = sum;
-                        }
-                    }
+            C[i][j] = sum;
+        }
+}
+// Ending execution time
+long endTime = System.nanoTime();
+
+// Calculate execution duration
+double duration = (endTime - startTime) / 1e9;
+
+// Display execution time
+System.out.printf("Execution Time: %.4f seconds%n",duration)
+;

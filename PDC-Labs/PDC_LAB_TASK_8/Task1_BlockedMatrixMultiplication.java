@@ -23,4 +23,9 @@ double[][] B = new double[N][N];
 // Create result matrix
 double[][] C = new double[N][N];
 // Create random number generator
-Random rand = new Random(42);
+Random rand = new Random(42);        // Fill input matrices with random values
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+
+            }
+        }

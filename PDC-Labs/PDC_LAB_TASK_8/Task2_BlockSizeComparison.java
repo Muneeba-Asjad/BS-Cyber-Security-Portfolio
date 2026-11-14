@@ -69,8 +69,37 @@ public class Task2_BlockSizeComparison {
                 }
             }
         }
-}
-long endTime = System.nanoTime();
+    }
+    long endTime = System.nanoTime();
 
-times[b]=(endTime-startTime)/1e9
+    times[b]=(endTime-startTime)/1e9;
+
+    // Display comparison table
+    System.out.println();System.out.println("Block Size\tExecution Time");
+
+    for(
+    int i = 0;i<5;i++)
+    {
+        System.out.printf("%d\t\t%.4f seconds%n",
+                blockSizes[i], times[i]);
+    }
+
+    // Finding fastest and slowest time
+    int fastest = 0;
+    int slowest = 0;
+
+    for(
+    int i = 1;i<5;i++)
+    {
+
+        if (times[i] < times[fastest]) {
+            fastest = i;
+        }
+
+        if (times[i] > times[slowest]) {
+            slowest = i;
+        }
+}
+
+System.out.println();System.out.println("Fastest Block Size: "+blockSizes[fastest]);System.out.println("Slowest Block Size: "+blockSizes[slowest])
 ;

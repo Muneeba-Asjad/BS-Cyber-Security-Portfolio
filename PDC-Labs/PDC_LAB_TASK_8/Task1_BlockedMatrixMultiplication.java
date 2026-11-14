@@ -30,3 +30,4 @@ Random rand = new Random(42);        // Fill input matrices with random values
             }
         }
         A[i][j] = rand.nextDouble();
+        B[i][j] = rand.nextDouble();

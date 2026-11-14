@@ -29,3 +29,9 @@ Random rand = new Random(42);
         }
                 // Store execution times
         double[] times = new double[5];
+                // Testing different block sizes
+        for (int b = 0; b < blockSizes.length; b++) {
+
+            int BLOCK_SIZE = blockSizes[b];
+
+        }

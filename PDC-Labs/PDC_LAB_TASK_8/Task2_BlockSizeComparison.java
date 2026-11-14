@@ -52,21 +52,25 @@ public class Task2_BlockSizeComparison {
     for(
     int ii = 0;ii<N;ii+=BLOCK_SIZE)
     {
-                for (int jj = 0; jj < N; jj += BLOCK_SIZE) {
-                    for (int kk = 0; kk < N; kk += BLOCK_SIZE) {
+        for (int jj = 0; jj < N; jj += BLOCK_SIZE) {
+            for (int kk = 0; kk < N; kk += BLOCK_SIZE) {
 
-                        for (int i = ii; i < ii + BLOCK_SIZE; i++) {
-                            for (int j = jj; j < jj + BLOCK_SIZE; j++) {
+                for (int i = ii; i < ii + BLOCK_SIZE; i++) {
+                    for (int j = jj; j < jj + BLOCK_SIZE; j++) {
 
-                                double sum = C[i][j];
+                        double sum = C[i][j];
 
-                                for (int k = kk; k < kk + BLOCK_SIZE; k++) {
-                                    sum += A[i][k] * B[k][j];
-                                }
-
-                                C[i][j] = sum;
-                            }
+                        for (int k = kk; k < kk + BLOCK_SIZE; k++) {
+                            sum += A[i][k] * B[k][j];
                         }
+
+                        C[i][j] = sum;
                     }
                 }
             }
+        }
+}
+long endTime = System.nanoTime();
+
+times[b]=(endTime-startTime)/1e9
+;

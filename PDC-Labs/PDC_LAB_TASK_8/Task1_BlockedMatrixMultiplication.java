@@ -67,5 +67,23 @@ long endTime = System.nanoTime();
 double duration = (endTime - startTime) / 1e9;
 
 // Display execution time
+System.out.printf("Execution Time: %.4f seconds%n",duration);
+
+// Ending execution time
+long endTime = System.nanoTime();
+
+// Calculate execution duration
+double duration = (endTime - startTime) / 1e9;
+
+// Display execution time
+System.out.printf("Execution Time: %.4f seconds%n",duration);
+
+// Ending execution time
+long endTime = System.nanoTime();
+
+// Calculate execution duration
+double duration = (endTime - startTime) / 1e9;
+
+// Display execution time
 System.out.printf("Execution Time: %.4f seconds%n",duration)
 ;

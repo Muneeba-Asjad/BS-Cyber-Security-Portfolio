@@ -7,3 +7,6 @@ public class Task1_BlockedMatrixMultiplication {
 
     }
 }
+
+// Define matrix size
+int N = 2048;

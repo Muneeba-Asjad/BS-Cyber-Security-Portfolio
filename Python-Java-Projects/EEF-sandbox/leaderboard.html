@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ezitech Auto Evaluation Platform &amp; Enterprise Sandbox</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <script>
+        // Apply saved/preferred theme BEFORE paint to avoid flash-of-wrong-theme.
+        (function () {
+            const saved = localStorage.getItem('ezitech_theme');
+            const preferred = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', preferred);
+        })();
+
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        canvas: 'rgb(var(--c-canvas) / <alpha-value>)',
+                        surface: 'rgb(var(--c-surface) / <alpha-value>)',
+                        surface2: 'rgb(var(--c-surface-2) / <alpha-value>)',
+                        line: 'rgb(var(--c-line) / <alpha-value>)',
+                        ink: {
+                            900: 'rgb(var(--c-ink-900) / <alpha-value>)',
+                            700: 'rgb(var(--c-ink-700) / <alpha-value>)',
+                            600: 'rgb(var(--c-ink-600) / <alpha-value>)',
+                            400: 'rgb(var(--c-ink-400) / <alpha-value>)',
+                            300: 'rgb(var(--c-ink-300) / <alpha-value>)',
+                        },
+                        accent: {
+                            900: 'rgb(var(--c-accent-900) / <alpha-value>)',
+                            700: 'rgb(var(--c-accent-700) / <alpha-value>)',
+                            600: 'rgb(var(--c-accent-600) / <alpha-value>)',
+                            500: 'rgb(var(--c-accent-500) / <alpha-value>)',
+                            100: 'rgb(var(--c-accent-100) / <alpha-value>)',
+                            50: 'rgb(var(--c-accent-50) / <alpha-value>)',
+                        },
+                        violet: {
+                            600: 'rgb(var(--c-violet-600) / <alpha-value>)',
+                            100: 'rgb(var(--c-violet-100) / <alpha-value>)',
+                        },
+                        amber: {
+                            600: 'rgb(var(--c-amber-600) / <alpha-value>)',
+                            100: 'rgb(var(--c-amber-100) / <alpha-value>)',
+                        },
+                        pass: {
+                            600: 'rgb(var(--c-pass-600) / <alpha-value>)',
+                            100: 'rgb(var(--c-pass-100) / <alpha-value>)',
+                        },
+                        warn: {
+                            600: 'rgb(var(--c-warn-600) / <alpha-value>)',
+                            100: 'rgb(var(--c-warn-100) / <alpha-value>)',
+                        },
+                        fail: {
+                            600: 'rgb(var(--c-fail-600) / <alpha-value>)',
+                            100: 'rgb(var(--c-fail-100) / <alpha-value>)',
+                        },
+                    },
+                    boxShadow: {
+                        'panel': '0 1px 2px rgba(15,18,32,0.04), 0 4px 14px rgba(15,18,32,0.03)',
+                        'panel-lg': '0 8px 30px rgba(15,18,32,0.10)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* ===== Design tokens (RGB triplets so Tailwind alpha utilities work) ===== */
+        :root[data-theme="light"] {
+            --c-canvas: 245 246 249;
+            --c-surface: 255 255 255;
+            --c-surface-2: 240 242 248;
+            --c-line: 229 231 238;
+
+            --c-ink-900: 15 18 32;
+            --c-ink-700: 42 47 66;
+            --c-ink-600: 74 80 105;
+            --c-ink-400: 139 144 163;
+            --c-ink-300: 183 187 201;
+
+            --c-accent-900: 14 27 51;
+            --c-accent-700: 22 41 74;
+            --c-accent-600: 37 61 219;
+            --c-accent-500: 79 111 255;
+            --c-accent-100: 227 231 254;
+            --c-accent-50: 243 245 255;
+
+            --c-violet-600: 124 58 237;
+            --c-violet-100: 237 229 254;
+
+            --c-amber-600: 217 119 6;
+            --c-amber-100: 254 240 213;
+
+            --c-pass-600: 5 150 105;
+            --c-pass-100: 214 247 233;
+
+            --c-warn-600: 194 121 15;
+            --c-warn-100: 252 241 222;
+
+            --c-fail-600: 220 38 38;
+            --c-fail-100: 254 226 226;
+
+            --shadow-tint: 15,18,32;
+            --scrollbar-track: 245 246 249;
+            --scrollbar-thumb: 201 204 218;
+        }
+
+        :root[data-theme="dark"] {
+            --c-canvas: 10 13 22;
+            --c-surface: 17 21 34;
+            --c-surface-2: 24 29 46;
+            --c-line: 40 46 66;
+
+            --c-ink-900: 240 242 250;
+            --c-ink-700: 205 210 227;
+            --c-ink-600: 162 168 191;
+            --c-ink-400: 122 129 153;
+            --c-ink-300: 84 91 115;
+
+            --c-accent-900: 8 12 24;
+            --c-accent-700: 30 48 92;
+            --c-accent-600: 91 124 250;
+            --c-accent-500: 124 152 255;
+            --c-accent-100: 33 41 68;
+            --c-accent-50: 22 27 44;
+
+            --c-violet-600: 167 139 250;
+            --c-violet-100: 41 33 74;
+
+            --c-amber-600: 251 191 36;
+            --c-amber-100: 54 41 12;
+
+            --c-pass-600: 52 211 153;
+            --c-pass-100: 15 46 38;
+
+            --c-warn-600: 251 191 36;
+            --c-warn-100: 54 41 12;
+
+            --c-fail-600: 248 113 113;
+            --c-fail-100: 56 22 24;
+
+            --shadow-tint: 0,0,0;
+            --scrollbar-track: 17 21 34;
+            --scrollbar-thumb: 51 58 82;
+        }
+
+        html { color-scheme: light; }
+        html[data-theme="dark"] { color-scheme: dark; }
+
+        body { font-family: 'Inter', sans-serif; background-color: rgb(var(--c-canvas)); overflow-x: hidden; transition: background-color .25s ease, color .25s ease; }
+        .panel { background: rgb(var(--c-surface)); border: 1px solid rgb(var(--c-line)); transition: background-color .25s ease, border-color .25s ease; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgb(var(--scrollbar-track)); }
+        ::-webkit-scrollbar-thumb { background: rgb(var(--scrollbar-thumb)); border-radius: 999px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgb(var(--c-accent-500)); }
+
+        .input-error { border-color: rgb(var(--c-fail-600)) !important; background-color: rgb(var(--c-fail-100)) !important; }
+        .input-error:focus { box-shadow: 0 0 0 3px rgba(220,38,38,0.14); }
+        .input-valid { border-color: rgb(var(--c-pass-600)) !important; background-color: rgb(var(--c-pass-100)) !important; }
+
+        .check-pending { color: rgb(var(--c-ink-400)); }
+        .check-passed { color: rgb(var(--c-pass-600)); }
+        .check-failed { color: rgb(var(--c-fail-600)); }
+
+        .auth-tab-active { color: rgb(var(--c-accent-600)); border-bottom: 2px solid rgb(var(--c-accent-600)); }
+        .auth-tab-inactive { color: rgb(var(--c-ink-300)); border-bottom: 2px solid transparent; }
+
+        .eyebrow { font-family: 'Fira Code', monospace; letter-spacing: 0.08em; }
+
+        .node-active { animation: node-glow 1.4s ease-in-out infinite alternate; }
+        @keyframes node-glow {
+            0% { filter: drop-shadow(0 0 0px rgba(91,124,250,0.0)); }
+            100% { filter: drop-shadow(0 0 6px rgba(91,124,250,0.6)); }
+        }
+
+        .hero-panel {
+            background: radial-gradient(120% 100% at 0% 0%, #4F6FFF 0%, #2E3D8F 45%, #0B1030 100%);
+        }
+        .glow-orb {
+            position: absolute;
+            border-radius: 999px;
+            filter: blur(70px);
+            opacity: 0.35;
+            pointer-events: none;
+        }
+        .icon-chip {
+            width: 38px; height: 38px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .icon-chip-solid {
+            box-shadow: 0 6px 14px -4px rgba(var(--shadow-tint), 0.35);
+        }
+
+        /* ===== Theme toggle switch ===== */
+        .theme-toggle {
+            position: relative;
+            width: 52px; height: 28px;
+            border-radius: 999px;
+            border: 1px solid rgb(var(--c-line));
+            background: rgb(var(--c-surface-2));
+            cursor: pointer;
+            display: inline-flex; align-items: center;
+            padding: 3px;
+            transition: background-color .25s ease, border-color .25s ease;
+        }
+        .theme-toggle .knob {
+            width: 20px; height: 20px; border-radius: 999px;
+            background: linear-gradient(135deg, #5B7CFA, #7C3AED);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 10px;
+            transform: translateX(0);
+            transition: transform .25s cubic-bezier(.4,0,.2,1);
+            box-shadow: 0 2px 6px rgba(91,124,250,0.5);
+        }
+        html[data-theme="dark"] .theme-toggle .knob { transform: translateX(24px); }
+
+        /* Subtle animated gradient used on primary buttons for extra polish */
+        .btn-gradient {
+            background: linear-gradient(135deg, rgb(var(--c-accent-600)), #7C3AED);
+            background-size: 160% 160%;
+            transition: background-position .4s ease, transform .15s ease, box-shadow .2s ease;
+        }
+        .btn-gradient:hover { background-position: 100% 0; box-shadow: 0 8px 20px -6px rgba(91,124,250,0.55); }
+    </style>
+</head>
+<body class="h-full text-ink-700 flex flex-col antialiased">
+
+    <!-- ============ AUTH SCREEN ============ -->
+    <div id="auth-screen" class="fixed inset-0 z-50 bg-canvas flex items-stretch">
+        <button onclick="toggleTheme()" class="theme-toggle fixed top-5 right-5 z-[60]" title="Toggle dark / light theme" aria-label="Toggle theme">
+            <span class="knob"><i id="theme-toggle-icon-auth" class="fa-solid fa-moon"></i></span>
+        </button>
+        <!-- Left identity panel -->
+        <div class="hidden lg:flex lg:w-[44%] hero-panel relative overflow-hidden flex-col justify-between p-12">
+            <div class="glow-orb w-96 h-96 bg-violet-600" style="top:-120px; left:-100px;"></div>
+            <div class="glow-orb w-80 h-80 bg-accent-500" style="bottom:-100px; right:-80px;"></div>
+
+            <div class="relative flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center backdrop-blur-sm">
+                    <i class="fa-solid fa-microchip-ai text-white text-base"></i>
+                </div>
+                <span class="text-white font-display font-semibold text-sm tracking-wide">Ezitech Auto</span>
+            </div>
+
+            <div class="relative max-w-md">
+                <p class="eyebrow text-[11px] text-white/50 uppercase mb-4">Engineering Evaluation Console</p>
+                <h1 class="font-display text-3xl font-semibold text-white leading-tight mb-5">
+                    Every submission, reviewed the same way automatically.
+                </h1>
+                <p class="text-sm text-white/60 leading-relaxed">
+                    Repositories are cloned into an isolated sandbox, executed under Docker, and scored across seven engineering dimensions no manual setup, no inconsistent grading.
+                </p>
+            </div>
+
+            <div class="relative flex items-center gap-8 text-white/45 text-[11px] font-mono uppercase tracking-wide">
+                <span><i class="fa-solid fa-cube mr-1.5"></i> Isolated Sandbox</span>
+                <span><i class="fa-solid fa-shield-halved mr-1.5"></i> Security Audited</span>
+                <span><i class="fa-solid fa-chart-simple mr-1.5"></i> 7 Score Metrics</span>
+            </div>
+        </div>
+
+        <!-- Right form panel -->
+        <div class="flex-1 flex items-center justify-center p-6">
+            <div class="w-full max-w-sm">
+                <div class="lg:hidden text-center mb-8">
+                    <div class="inline-flex bg-accent-50 text-accent-600 p-3 rounded-xl border border-accent-100 mb-3">
+                        <i class="fa-solid fa-microchip-ai text-2xl"></i>
+                    </div>
+                    <h1 class="text-lg font-display font-semibold text-ink-900">Ezitech Auto</h1>
+                </div>
+
+                <div class="bg-surface rounded-2xl border border-line shadow-panel-lg overflow-hidden">
+                    <div class="flex border-b border-line">
+                        <button onclick="switchAuthTab('login')" id="auth-tab-login" class="flex-1 py-4 text-[11px] font-semibold uppercase tracking-wider auth-tab-active transition-all">
+                            Log In
+                        </button>
+                        <button onclick="switchAuthTab('register')" id="auth-tab-register" class="flex-1 py-4 text-[11px] font-semibold uppercase tracking-wider auth-tab-inactive transition-all">
+                            Sign Up
+                        </button>
+                    </div>
+
+                    <!-- Login Form -->
+                    <div id="auth-form-login" class="p-7 space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-1.5">Email</label>
+                            <input type="email" id="login-email" placeholder="you@ezitech.com"
+                                   class="w-full bg-canvas border border-line rounded-xl px-4 py-3 text-sm text-ink-900 focus:outline-none focus:border-accent-600 focus:ring-2 focus:ring-accent-100 transition-all placeholder:text-ink-300">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-1.5">Password</label>
+                            <input type="password" id="login-password" placeholder="••••••••"
+                                   class="w-full bg-canvas border border-line rounded-xl px-4 py-3 text-sm text-ink-900 focus:outline-none focus:border-accent-600 focus:ring-2 focus:ring-accent-100 transition-all placeholder:text-ink-300">
+                        </div>
+                        <p id="login-error-msg" class="text-[11px] font-semibold text-fail-600 hidden"></p>
+                        <button onclick="handleLogin()" id="login-btn"
+                                class="w-full btn-gradient text-white font-semibold py-3.5 rounded-xl active:scale-[0.99] transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-wider disabled:opacity-60 shadow-panel">
+                            <i class="fa-solid fa-right-to-bracket"></i> Log In
+                        </button>
+                    </div>
+
+                    <!-- Register Form -->
+                    <div id="auth-form-register" class="p-7 space-y-4 hidden">
+                        <div>
+                            <label class="block text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-1.5">Full Name</label>
+                            <input type="text" id="register-name" placeholder="Your name"
+                                   class="w-full bg-canvas border border-line rounded-xl px-4 py-3 text-sm text-ink-900 focus:outline-none focus:border-accent-600 focus:ring-2 focus:ring-accent-100 transition-all placeholder:text-ink-300">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-1.5">Email</label>
+                            <input type="email" id="register-email" placeholder="you@ezitech.com"
+                                   class="w-full bg-canvas border border-line rounded-xl px-4 py-3 text-sm text-ink-900 focus:outline-none focus:border-accent-600 focus:ring-2 focus:ring-accent-100 transition-all placeholder:text-ink-300">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-1.5">Password</label>
+                            <input type="password" id="register-password" placeholder="At least 6 characters"
+                                   class="w-full bg-canvas border border-line rounded-xl px-4 py-3 text-sm text-ink-900 focus:outline-none focus:border-accent-600 focus:ring-2 focus:ring-accent-100 transition-all placeholder:text-ink-300">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-1.5">Role</label>
+                            <select id="register-role" class="w-full bg-canvas border border-line rounded-xl px-4 py-3 text-sm text-ink-900 focus:outline-none focus:border-accent-600">
+                                <option value="intern">Intern</option>
+                                <option value="mentor">Mentor</option>
+                            </select>
+                        </div>
+                        <p id="register-error-msg" class="text-[11px] font-semibold text-fail-600 hidden"></p>
+                        <button onclick="handleRegister()" id="register-btn"
+                                class="w-full btn-gradient text-white font-semibold py-3.5 rounded-xl active:scale-[0.99] transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-wider disabled:opacity-60 shadow-panel">
+                            <i class="fa-solid fa-user-plus"></i> Create Account
+                        </button>
+                    </div>
+                </div>
+
+                <p class="text-center text-[11px] text-ink-400 mt-6">Only public GitHub repositories can be evaluated.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MAIN APP ============ -->
+    <div id="main-app" class="hidden flex h-screen overflow-hidden">
+
+        <!-- Sidebar -->
+        <aside class="w-60 bg-surface border-r border-line flex flex-col justify-between shrink-0 z-40">
+            <div>
+                <div class="h-16 px-5 flex items-center border-b border-line">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center shadow-panel">
+                            <i class="fa-solid fa-microchip-ai text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <h1 class="font-display font-semibold text-[13px] text-ink-900 leading-tight">Ezitech Auto</h1>
+                            <span class="eyebrow text-[9px] text-ink-400 uppercase">Sandbox v3.4</span>
+                        </div>
+                    </div>
+                </div>
+
+                <nav class="p-3 space-y-0.5 mt-2">
+                    <button onclick="switchTab('dashboard')" id="btn-dashboard" class="nav-tab-btn w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] font-medium rounded-lg text-accent-600 bg-accent-50 transition-all">
+                        <i class="fa-solid fa-chart-line w-4 text-center"></i> Control Room
+                    </button>
+                    <button onclick="switchTab('pipeline')" id="btn-pipeline" class="nav-tab-btn w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] font-medium rounded-lg text-ink-400 hover:text-ink-700 hover:bg-canvas transition-all">
+                        <i class="fa-solid fa-terminal w-4 text-center"></i> Sandbox Executor
+                    </button>
+                    <button onclick="switchTab('reports')" id="btn-reports" class="nav-tab-btn w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] font-medium rounded-lg text-ink-400 hover:text-ink-700 hover:bg-canvas transition-all">
+                        <i class="fa-solid fa-gauge-high w-4 text-center"></i> Scorecard Insights
+                    </button>
+                    <button onclick="switchTab('leaderboard')" id="btn-leaderboard" class="nav-tab-btn w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] font-medium rounded-lg text-ink-400 hover:text-ink-700 hover:bg-canvas transition-all">
+                        <i class="fa-solid fa-trophy w-4 text-center"></i> Public Scoreboard
+                    </button>
+                    <button onclick="switchTab('telemetry')" id="btn-telemetry" class="nav-tab-btn w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] font-medium rounded-lg text-ink-400 hover:text-ink-700 hover:bg-canvas transition-all">
+                        <i class="fa-solid fa-heart-pulse w-4 text-center"></i> Monitoring &amp; Logging
+                    </button>
+                </nav>
+            </div>
+
+            <div class="p-3 border-t border-line space-y-2">
+                <div class="flex items-center justify-between bg-canvas p-2.5 rounded-xl border border-line">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-accent-500 to-violet-600 text-white flex items-center justify-center font-display font-semibold text-[10px] shrink-0" id="user-avatar">?</div>
+                        <div class="min-w-0">
+                            <div class="text-ink-900 font-semibold text-[11px] truncate" id="user-name-lbl">-</div>
+                            <div class="text-ink-400 text-[9px] uppercase font-mono" id="user-role-lbl">-</div>
+                        </div>
+                    </div>
+                    <button onclick="handleLogout()" title="Log out" class="text-ink-300 hover:text-fail-600 transition-colors shrink-0 ml-2">
+                        <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                    </button>
+                </div>
+                <div class="text-[10px] font-mono text-ink-400 space-y-1 px-1">
+                    <div class="flex justify-between"><span>ENV</span><span class="text-accent-600 font-semibold">LIVE</span></div>
+                    <div class="flex justify-between"><span>DB</span><span class="text-ink-600 font-semibold">SQLite-3</span></div>
+                    <div class="flex justify-between"><span>SYNC</span><span class="text-ink-600 font-semibold" id="last-sync-lbl">--:--:--</span></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="flex-1 flex flex-col overflow-y-auto bg-canvas">
+            <div id="toast-container" class="fixed top-5 right-5 z-50 pointer-events-none space-y-2"></div>
+
+            <header class="h-16 border-b border-line bg-surface/90 flex items-center justify-between px-8 sticky top-0 z-30 backdrop-blur-md">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-accent-600"></span>
+                    <span class="text-[12px] text-ink-600 font-medium">Enterprise AI Engineering Sandbox &amp; Auto Evaluation Platform</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 bg-pass-100 text-pass-600 px-3 py-1.5 rounded-full font-semibold uppercase tracking-wider text-[10px]">
+                        <span class="w-1.5 h-1.5 rounded-full bg-pass-600"></span> System Stable
+                    </div>
+                    <button onclick="toggleTheme()" class="theme-toggle" title="Toggle dark / light theme" aria-label="Toggle theme">
+                        <span class="knob"><i id="theme-toggle-icon" class="fa-solid fa-moon"></i></span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="p-8 flex-1 space-y-6">
+
+                <!-- Tab 1: Control Room -->
+                <div id="tab-dashboard" class="tab-pane space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="panel p-5 rounded-2xl shadow-panel hover:shadow-panel-lg transition-shadow">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="icon-chip icon-chip-solid bg-gradient-to-br from-accent-500 to-accent-700"><i class="fa-solid fa-bolt text-white text-sm"></i></div>
+                            </div>
+                            <h3 class="text-[10px] font-semibold text-ink-400 uppercase tracking-wide mb-1">Total Evaluations</h3>
+                            <span class="text-2xl font-display font-bold text-ink-900" id="stat-evaluations">0</span>
+                        </div>
+                        <div class="panel p-5 rounded-2xl shadow-panel hover:shadow-panel-lg transition-shadow">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="icon-chip icon-chip-solid bg-gradient-to-br from-pass-600 to-emerald-700" style="background-image:linear-gradient(135deg, rgb(var(--c-pass-600)), #0d7a55)"><i class="fa-solid fa-bullseye text-white text-sm"></i></div>
+                            </div>
+                            <h3 class="text-[10px] font-semibold text-ink-400 uppercase tracking-wide mb-1">Avg Engineering Score</h3>
+                            <span class="text-2xl font-display font-bold text-pass-600" id="stat-avg-score">0.00%</span>
+                        </div>
+                        <div class="panel p-5 rounded-2xl shadow-panel hover:shadow-panel-lg transition-shadow">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="icon-chip icon-chip-solid" style="background-image:linear-gradient(135deg, rgb(var(--c-violet-600)), #4c1d95)"><i class="fa-solid fa-shield text-white text-sm"></i></div>
+                            </div>
+                            <h3 class="text-[10px] font-semibold text-ink-400 uppercase tracking-wide mb-1">Security Audits Passed</h3>
+                            <span class="text-2xl font-display font-bold text-violet-600" id="stat-security">100%</span>
+                        </div>
+                        <div class="panel p-5 rounded-2xl shadow-panel hover:shadow-panel-lg transition-shadow">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="icon-chip icon-chip-solid" style="background-image:linear-gradient(135deg, rgb(var(--c-warn-600)), #b45309)"><i class="fa-solid fa-cubes text-white text-sm"></i></div>
+                            </div>
+                            <h3 class="text-[10px] font-semibold text-ink-400 uppercase tracking-wide mb-1">Active Sandbox Workers</h3>
+                            <span class="text-2xl font-display font-bold text-warn-600" id="stat-workers">04 / 20</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-1 bg-surface p-6 rounded-2xl border border-line shadow-panel space-y-5">
+                            <div class="flex items-center gap-3">
+                                <div class="icon-chip bg-ink-900"><i class="fa-brands fa-github text-white text-sm"></i></div>
+                                <div>
+                                    <h2 class="text-sm font-display font-semibold text-ink-900">Submit GitHub Repository</h2>
+                                </div>
+                            </div>
+                            <p class="text-xs text-ink-400 leading-relaxed -mt-2">Only a valid, public repository is accepted. The link is verified live against GitHub before evaluation starts.</p>
+
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-1.5">GitHub Repository URL</label>
+                                    <input type="text" id="targetUrl" placeholder="https://github.com/username/repository"
+                                           oninput="clearUrlValidationState()"
+                                           class="w-full bg-canvas border border-line rounded-xl px-4 py-3 text-sm text-ink-900 focus:outline-none focus:border-accent-600 focus:ring-2 focus:ring-accent-100 transition-all placeholder:text-ink-300 font-mono">
+                                    <p class="text-[10px] text-ink-400 mt-1.5 flex items-center gap-1">
+                                        <i class="fa-solid fa-circle-info"></i> Format: https://github.com/owner/repo
+                                    </p>
+                                    <p id="url-validation-msg" class="text-[10px] font-semibold mt-1 hidden"></p>
+                                </div>
+
+                                <button onclick="triggerEvaluationPipeline()" id="run-pipeline-btn"
+                                        class="w-full btn-gradient text-white font-semibold py-3.5 rounded-xl active:scale-[0.99] transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-wider disabled:opacity-60 disabled:cursor-not-allowed shadow-panel">
+                                    <i class="fa-solid fa-terminal"></i> Start Evaluation
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-2 bg-surface p-6 rounded-2xl border border-line shadow-panel flex flex-col justify-between">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="flex items-center gap-3">
+                                    <div class="icon-chip bg-accent-50"><i class="fa-solid fa-compass text-accent-600 text-sm"></i></div>
+                                    <div>
+                                        <h3 class="text-sm font-display font-semibold text-ink-900">Engineering Analysis Diagnostics</h3>
+                                        <p class="text-xs text-ink-400 mt-0.5">Top-ranked candidates across all 7 engineering score dimensions</p>
+                                    </div>
+                                </div>
+                                <span class="eyebrow bg-canvas border border-line px-2.5 py-1 rounded-full text-[9px] text-ink-400 uppercase">Live</span>
+                            </div>
+                            <div class="relative flex-1 h-64">
+                                <canvas id="dashboardRadar"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Sandbox Executor -->
+                <div id="tab-pipeline" class="tab-pane space-y-6 hidden">
+
+                    <div class="bg-surface p-6 rounded-2xl border border-line shadow-panel space-y-4">
+                        <div class="flex items-center gap-3">
+                            <div class="icon-chip bg-accent-50"><i class="fa-solid fa-network-wired text-accent-600 text-sm"></i></div>
+                            <div>
+                                <h3 class="text-sm font-display font-semibold text-ink-900">Sandbox Execution Pipeline</h3>
+                                <p class="text-xs text-ink-400 mt-0.5">Clone, build, launch, test, and audit — executed inside an isolated container, then destroyed on completion.</p>
+                            </div>
+                        </div>
+
+                        <div class="w-full bg-canvas p-4 rounded-xl border border-line overflow-x-auto">
+                            <svg id="pipeline-svg" class="mx-auto min-w-[720px] h-28" viewBox="0 0 1000 110">
+                                <line x1="108" y1="50" x2="252" y2="50" stroke="#D9DCE6" stroke-width="2" id="line-1"/>
+                                <line x1="288" y1="50" x2="432" y2="50" stroke="#D9DCE6" stroke-width="2" id="line-2"/>
+                                <line x1="468" y1="50" x2="612" y2="50" stroke="#D9DCE6" stroke-width="2" id="line-3"/>
+                                <line x1="648" y1="50" x2="792" y2="50" stroke="#D9DCE6" stroke-width="2" id="line-4"/>
+                                <line x1="828" y1="50" x2="928" y2="50" stroke="#D9DCE6" stroke-width="2" id="line-5"/>
+
+                                <rect x="66" y="34" width="32" height="32" rx="8" fill="#FFFFFF" stroke="#D9DCE6" stroke-width="2" id="node-0"/>
+                                <text x="82" y="94" fill="#8B90A3" font-size="9" font-family="'Fira Code',monospace" font-weight="600" text-anchor="middle">01 CLONE</text>
+
+                                <rect x="246" y="34" width="32" height="32" rx="8" fill="#FFFFFF" stroke="#D9DCE6" stroke-width="2" id="node-1"/>
+                                <text x="262" y="94" fill="#8B90A3" font-size="9" font-family="'Fira Code',monospace" font-weight="600" text-anchor="middle">02 BUILD</text>
+
+                                <rect x="426" y="34" width="32" height="32" rx="8" fill="#FFFFFF" stroke="#D9DCE6" stroke-width="2" id="node-2"/>
+                                <text x="442" y="94" fill="#8B90A3" font-size="9" font-family="'Fira Code',monospace" font-weight="600" text-anchor="middle">03 LAUNCH</text>
+
+                                <rect x="606" y="34" width="32" height="32" rx="8" fill="#FFFFFF" stroke="#D9DCE6" stroke-width="2" id="node-3"/>
+                                <text x="622" y="94" fill="#8B90A3" font-size="9" font-family="'Fira Code',monospace" font-weight="600" text-anchor="middle">04 TEST</text>
+
+                                <rect x="786" y="34" width="32" height="32" rx="8" fill="#FFFFFF" stroke="#D9DCE6" stroke-width="2" id="node-4"/>
+                                <text x="802" y="94" fill="#8B90A3" font-size="9" font-family="'Fira Code',monospace" font-weight="600" text-anchor="middle">05 AUDIT</text>
+
+                                <rect x="912" y="34" width="32" height="32" rx="8" fill="#FFFFFF" stroke="#D9DCE6" stroke-width="2" id="node-5"/>
+                                <text x="928" y="94" fill="#8B90A3" font-size="9" font-family="'Fira Code',monospace" font-weight="600" text-anchor="middle">06 REPORT</text>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+
+                        <div class="xl:col-span-6 flex flex-col">
+                            <div class="flex justify-between items-center bg-ink-900 px-5 py-3 rounded-t-2xl border border-b-0 border-ink-900">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-fail-600"></span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-warn-600"></span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-pass-600"></span>
+                                    <span class="text-[11px] font-mono text-ink-300 ml-3 font-semibold">sandbox-console</span>
+                                </div>
+                                <div id="pipeline-status-badge" class="bg-white/5 text-ink-300 text-[9px] font-mono font-semibold px-2.5 py-1 rounded-full border border-white/10 uppercase tracking-wider">
+                                    Awaiting Trigger
+                                </div>
+                            </div>
+                            <div class="flex-1 bg-ink-900 p-5 rounded-b-2xl border border-t-0 border-ink-900 font-mono text-[11px] text-ink-300 h-[380px] overflow-y-auto space-y-1.5" id="terminal-screen">
+                                <p class="text-ink-400">&gt; Sandbox engine ready.</p>
+                                <p class="text-ink-400">&gt; Enter a verified GitHub repository to begin evaluation.</p>
+                            </div>
+                        </div>
+
+                        <div class="xl:col-span-6 flex flex-col bg-surface rounded-2xl border border-line overflow-hidden shadow-panel">
+                            <div class="flex items-center justify-between bg-canvas border-b border-line px-5 py-3.5">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-list-check text-accent-600 text-xs"></i>
+                                    <span class="text-[11px] font-semibold text-ink-700 uppercase tracking-wide">AI Engineering Validation Checklist</span>
+                                </div>
+                                <span class="eyebrow text-[9px] bg-accent-50 border border-accent-100 text-accent-600 px-2 py-0.5 rounded-full uppercase">Live</span>
+                            </div>
+                            <div class="p-5 space-y-2.5" id="validation-checklist">
+                                <!-- populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Scorecard Insights -->
+                <div id="tab-reports" class="tab-pane space-y-6 hidden">
+                    <div id="report-empty-state" class="panel p-16 rounded-2xl shadow-panel text-center space-y-3">
+                        <i class="fa-solid fa-folder-open text-4xl text-ink-300"></i>
+                        <h3 class="text-sm font-display font-semibold text-ink-600">No Assessment Record Loaded</h3>
+                        <p class="text-xs text-ink-400 max-w-md mx-auto">Run an evaluation, or click Inspect on a scorecard in the Public Scoreboard, to load a detailed report here.</p>
+                    </div>
+
+                    <div id="report-active-container" class="space-y-6 hidden">
+                        <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+                            <div class="panel p-5 rounded-2xl shadow-panel space-y-4">
+                                <h3 class="eyebrow text-[10px] font-semibold text-ink-400 uppercase">Repository Details</h3>
+                                <div>
+                                    <div class="text-lg font-display font-semibold text-ink-900" id="report-repo-name">-</div>
+                                    <a href="#" target="_blank" class="text-xs text-accent-600 hover:underline inline-block mt-1 font-mono break-all" id="report-repo-url">-</a>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 pt-3 border-t border-line">
+                                    <div>
+                                        <span class="block text-ink-400 text-[9px] uppercase font-semibold mb-0.5">Grade</span>
+                                        <span class="text-xl font-display font-bold text-accent-600" id="report-grade">-</span>
+                                    </div>
+                                    <div>
+                                        <span class="block text-ink-400 text-[9px] uppercase font-semibold mb-0.5">Overall Score</span>
+                                        <span class="text-xl font-display font-bold text-pass-600" id="report-overall">-</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel p-5 rounded-2xl shadow-panel space-y-3.5">
+                                <h3 class="eyebrow text-[10px] font-semibold text-ink-400 uppercase">Automated Testing Engine</h3>
+                                <div class="space-y-2 text-[11px] font-medium">
+                                    <div class="flex items-center justify-between gap-3 border-b border-line pb-2">
+                                        <span class="text-ink-600 shrink-0">API Tests</span>
+                                        <span class="font-mono font-bold shrink-0 px-2 py-0.5 rounded-full text-[9px] bg-canvas border border-line" id="chk-api">Passed</span>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-3 border-b border-line pb-2">
+                                        <span class="text-ink-600 shrink-0">Unit Tests</span>
+                                        <span class="font-mono font-bold shrink-0 px-2 py-0.5 rounded-full text-[9px] bg-canvas border border-line" id="chk-unit">Passed</span>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-3 border-b border-line pb-2">
+                                        <span class="text-ink-600 shrink-0">Database Tests</span>
+                                        <span class="font-mono font-bold shrink-0 px-2 py-0.5 rounded-full text-[9px] bg-canvas border border-line" id="chk-db">Passed</span>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-3 border-b border-line pb-2">
+                                        <span class="text-ink-600 shrink-0">Integration Tests</span>
+                                        <span class="font-mono font-bold shrink-0 px-2 py-0.5 rounded-full text-[9px] bg-canvas border border-line" id="chk-integration">Passed</span>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-3 border-b border-line pb-2">
+                                        <span class="text-ink-600 shrink-0">UI Smoke Tests</span>
+                                        <span class="font-mono font-bold shrink-0 px-2 py-0.5 rounded-full text-[9px] bg-canvas border border-line" id="chk-uismoke">Passed</span>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-3">
+                                        <span class="text-ink-600 shrink-0">Performance Checks</span>
+                                        <span class="font-mono font-bold shrink-0 px-2 py-0.5 rounded-full text-[9px] bg-canvas border border-line" id="chk-performance">Passed</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel p-4 rounded-2xl shadow-panel">
+                                <div class="relative h-64 w-full">
+                                    <canvas id="radarScorechart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                            <div class="lg:col-span-5 bg-surface p-6 rounded-2xl border border-line shadow-panel space-y-4">
+                                <h3 class="eyebrow text-[10px] font-semibold text-accent-600 uppercase flex items-center gap-2"><i class="fa-solid fa-chart-simple"></i> AI Engineering Analysis Scores</h3>
+                                <div class="space-y-3" id="score-bars-container">
+                                    <!-- populated by JS -->
+                                </div>
+                            </div>
+
+                            <div class="lg:col-span-7 grid grid-cols-1 gap-5">
+                                <div class="bg-surface p-6 rounded-2xl border border-line shadow-panel space-y-3">
+                                    <h3 class="eyebrow text-[10px] font-semibold text-pass-600 uppercase flex items-center gap-2"><i class="fa-solid fa-award"></i> Engineering Strengths</h3>
+                                    <ul class="space-y-2 text-xs text-ink-600 font-medium" id="feedback-strengths"></ul>
+                                </div>
+
+                                <div class="bg-surface p-6 rounded-2xl border border-line shadow-panel space-y-3">
+                                    <h3 class="eyebrow text-[10px] font-semibold text-fail-600 uppercase flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Improvement &amp; Risk Areas</h3>
+                                    <ul class="space-y-2 text-xs text-ink-600 font-medium" id="feedback-weaknesses"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 4: Public Scoreboard -->
+                <div id="tab-leaderboard" class="tab-pane space-y-6 hidden">
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-3" id="category-leaders-row">
+                        <!-- populated by JS -->
+                    </div>
+
+                    <div class="bg-surface rounded-2xl border border-line shadow-panel overflow-hidden">
+                        <div class="p-5 border-b border-line flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-canvas">
+                            <div>
+                                <h2 class="text-sm font-display font-semibold text-ink-900 flex items-center gap-2"><i class="fa-solid fa-trophy text-accent-600"></i> Public Engineering Scoreboard</h2>
+                                <p class="text-xs text-ink-400 mt-0.5">All submissions ranked by overall engineering score, evaluated identically.</p>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-2">
+                                <select id="lead-tech" onchange="filterLeaderboard()" class="bg-surface border border-line rounded-lg px-3 py-2 text-xs text-ink-700 focus:outline-none focus:border-accent-600 font-medium cursor-pointer">
+                                    <option value="all">All Tech Stacks</option>
+                                    <option value="Laravel">Laravel API</option>
+                                    <option value="MERN">MERN Fullstack</option>
+                                    <option value="Python">Python / DevOps</option>
+                                    <option value="Flutter">Flutter / Mobile</option>
+                                    <option value="Unknown">Unclassified</option>
+                                </select>
+
+                                <div class="flex gap-1 bg-surface p-1 rounded-lg border border-line">
+                                    <button onclick="exportLeaderboardData('json')" class="px-2.5 py-1.5 rounded text-ink-500 hover:text-ink-800 hover:bg-canvas text-[11px] font-semibold font-mono flex items-center gap-1 transition-all">
+                                        <i class="fa-solid fa-file-code"></i> JSON
+                                    </button>
+                                    <button onclick="exportLeaderboardData('csv')" class="px-2.5 py-1.5 rounded text-ink-500 hover:text-ink-800 hover:bg-canvas text-[11px] font-semibold font-mono flex items-center gap-1 transition-all">
+                                        <i class="fa-solid fa-file-csv"></i> CSV
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-canvas text-ink-400 text-[10px] uppercase tracking-wider font-semibold border-b border-line">
+                                    <tr>
+                                        <th class="py-3 px-5 text-center">Rank</th>
+                                        <th class="py-3 px-5">Repository</th>
+                                        <th class="py-3 px-3 text-center">Stack</th>
+                                        <th class="py-3 px-3 text-center">Architecture</th>
+                                        <th class="py-3 px-3 text-center">Security</th>
+                                        <th class="py-3 px-3 text-center">Build Time</th>
+                                        <th class="py-3 px-3 text-center">Overall Score</th>
+                                        <th class="py-3 px-3 text-center">Grade</th>
+                                        <th class="py-3 px-5 text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leaderboard-table-body" class="divide-y divide-line text-[11px] font-medium"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 5: Monitoring & Logging -->
+                <div id="tab-telemetry" class="tab-pane space-y-6 hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                        <div class="bg-surface p-6 rounded-2xl border border-line shadow-panel space-y-5">
+                            <div class="flex items-center gap-3">
+                                <div class="icon-chip bg-accent-50"><i class="fa-solid fa-cube text-accent-600 text-sm"></i></div>
+                                <div>
+                                    <h3 class="text-sm font-display font-semibold text-ink-900">Container Resource Monitoring</h3>
+                                    <p class="text-xs text-ink-400 mt-0.5">Live host resource utilization, sampled every second.</p>
+                                </div>
+                            </div>
+                            <div class="relative h-56 bg-canvas rounded-xl border border-line p-4">
+                                <canvas id="telemetryLineChart"></canvas>
+                            </div>
+                            <div class="grid grid-cols-3 gap-3 text-center">
+                                <div class="bg-canvas p-3 rounded-xl border border-line">
+                                    <span class="block text-[9px] font-mono text-ink-400 font-semibold uppercase">CPU Usage</span>
+                                    <span class="text-base font-display font-bold text-accent-600" id="cpu-lbl">0%</span>
+                                </div>
+                                <div class="bg-canvas p-3 rounded-xl border border-line">
+                                    <span class="block text-[9px] font-mono text-ink-400 font-semibold uppercase">RAM Usage</span>
+                                    <span class="text-base font-display font-bold text-pass-600" id="ram-lbl">0 MB</span>
+                                </div>
+                                <div class="bg-canvas p-3 rounded-xl border border-line">
+                                    <span class="block text-[9px] font-mono text-ink-400 font-semibold uppercase">Network I/O</span>
+                                    <span class="text-base font-display font-bold text-warn-600" id="net-lbl">0 KB/s</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-surface p-6 rounded-2xl border border-line shadow-panel flex flex-col justify-between">
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="icon-chip bg-pass-100"><i class="fa-solid fa-fingerprint text-pass-600 text-sm"></i></div>
+                                    <div>
+                                        <h3 class="text-sm font-display font-semibold text-ink-900">AI Plagiarism Detection</h3>
+                                        <p class="text-xs text-ink-400 mt-0.5">Structural hashing against prior submissions.</p>
+                                    </div>
+                                </div>
+
+                                <div class="p-4 bg-canvas border border-line rounded-xl flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fa-solid fa-shield-halved text-xl text-pass-600"></i>
+                                        <div>
+                                            <h4 class="text-xs font-semibold text-ink-700 uppercase tracking-wide">Cryptographic Hash Validation</h4>
+                                            <span class="text-[10px] text-ink-400">Checking signature indexes for duplication risk</span>
+                                        </div>
+                                    </div>
+                                    <span class="bg-pass-100 text-pass-600 px-2.5 py-1 text-[9px] font-mono font-bold rounded-full uppercase">99.8% Unique</span>
+                                </div>
+
+                                <div class="p-4 bg-canvas border border-line rounded-xl flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fa-solid fa-code-compare text-xl text-accent-600"></i>
+                                        <div>
+                                            <h4 class="text-xs font-semibold text-ink-700 uppercase tracking-wide">Static Syntax Tree Analysis</h4>
+                                            <span class="text-[10px] text-ink-400">Identifying block shifting and logical similarities</span>
+                                        </div>
+                                    </div>
+                                    <span class="bg-accent-100 text-accent-600 px-2.5 py-1 text-[9px] font-mono font-bold rounded-full uppercase">Gate Passed</span>
+                                </div>
+                            </div>
+
+                            <div class="border-t border-line pt-4 mt-4 space-y-2">
+                                <span class="block text-[10px] font-semibold text-ink-400 uppercase tracking-wide">Run Manual Forensic Verification</span>
+                                <button onclick="triggerForensicVerification()" class="w-full bg-canvas border border-line hover:bg-accent-50 hover:border-accent-200 text-ink-700 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wide transition-all flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-magnifying-glass"></i> Trigger Similarity Scan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin.includes('http') ? window.location.origin : 'http://127.0.0.1:8000';
+
+        let authToken = localStorage.getItem('ezitech_token') || null;
+        let currentUser = null;
+
+        // ===== Theme handling =====
+        function cssVar(name) {
+            const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+            return v ? `rgb(${v})` : '#000000';
+        }
+        function cssVarAlpha(name, alpha) {
+            const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+            return v ? `rgba(${v.split(' ').join(',')},${alpha})` : `rgba(0,0,0,${alpha})`;
+        }
+        function isDarkTheme() {
+            return document.documentElement.getAttribute('data-theme') === 'dark';
+        }
+        function syncThemeIcons() {
+            const dark = isDarkTheme();
+            ['theme-toggle-icon', 'theme-toggle-icon-auth'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.className = dark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            });
+        }
+        function toggleTheme() {
+            const next = isDarkTheme() ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('ezitech_theme', next);
+            syncThemeIcons();
+            refreshThemedVisuals();
+        }
+        function refreshThemedVisuals() {
+            // Re-draw anything with baked-in hex colors so it matches the active theme.
+            resetFlowchartVisuals();
+            if (typeof activeTab !== 'undefined') {
+                if (activeTab === 'dashboard') renderDashboardRadar();
+                if (activeTab === 'telemetry' && telemetryChart) initTelemetryLineChart();
+            }
+            const reportContainer = document.getElementById('report-active-container');
+            if (reportContainer && !reportContainer.classList.contains('hidden')) {
+                const lastId = window.__lastViewedReportId;
+                const item = (typeof MOCK_SUBMISSIONS !== 'undefined') ? MOCK_SUBMISSIONS.find(s => s.id === lastId) : null;
+                if (item) renderRadarScorecard(item);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', syncThemeIcons);
+
+        function switchAuthTab(tab) {
+            const loginTab = document.getElementById('auth-tab-login');
+            const registerTab = document.getElementById('auth-tab-register');
+            const loginForm = document.getElementById('auth-form-login');
+            const registerForm = document.getElementById('auth-form-register');
+
+            if (tab === 'login') {
+                loginTab.className = "flex-1 py-4 text-[11px] font-semibold uppercase tracking-wider auth-tab-active transition-all";
+                registerTab.className = "flex-1 py-4 text-[11px] font-semibold uppercase tracking-wider auth-tab-inactive transition-all";
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+            } else {
+                registerTab.className = "flex-1 py-4 text-[11px] font-semibold uppercase tracking-wider auth-tab-active transition-all";
+                loginTab.className = "flex-1 py-4 text-[11px] font-semibold uppercase tracking-wider auth-tab-inactive transition-all";
+                registerForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+            }
+        }
+
+        function showAuthError(elementId, message) {
+            const el = document.getElementById(elementId);
+            el.innerText = message;
+            el.classList.remove('hidden');
+        }
+
+        function hideAuthErrors() {
+            document.getElementById('login-error-msg').classList.add('hidden');
+            document.getElementById('register-error-msg').classList.add('hidden');
+        }
+
+        async function handleLogin() {
+            hideAuthErrors();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const btn = document.getElementById('login-btn');
+
+            if (!email || !password) {
+                showAuthError('login-error-msg', 'Please enter both email and password.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Logging in...`;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const body = await res.json();
+
+                if (!res.ok) {
+                    showAuthError('login-error-msg', body.detail || 'Login failed.');
+                    return;
+                }
+
+                completeLogin(body.token, body.user);
+            } catch (err) {
+                showAuthError('login-error-msg', 'Could not reach the server. Is the backend running?');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> Log In`;
+            }
+        }
+
+        async function handleRegister() {
+            hideAuthErrors();
+            const full_name = document.getElementById('register-name').value.trim();
+            const email = document.getElementById('register-email').value.trim();
+            const password = document.getElementById('register-password').value;
+            const role = document.getElementById('register-role').value;
+            const btn = document.getElementById('register-btn');
+
+            if (!email || !password) {
+                showAuthError('register-error-msg', 'Please enter both email and password.');
+                return;
+            }
+            if (password.length < 6) {
+                showAuthError('register-error-msg', 'Password must be at least 6 characters.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Creating account...`;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, full_name, role })
+                });
+                const body = await res.json();
+
+                if (!res.ok) {
+                    showAuthError('register-error-msg', body.detail || 'Registration failed.');
+                    return;
+                }
+
+                completeLogin(body.token, body.user);
+            } catch (err) {
+                showAuthError('register-error-msg', 'Could not reach the server. Is the backend running?');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-user-plus"></i> Create Account`;
+            }
+        }
+
+        function completeLogin(token, user) {
+            authToken = token;
+            currentUser = user;
+            localStorage.setItem('ezitech_token', token);
+            showMainApp();
+        }
+
+        function handleLogout() {
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('ezitech_token');
+            document.getElementById('main-app').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-password').value = '';
+        }
+
+        function showMainApp() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('main-app').classList.add('flex');
+
+            if (currentUser) {
+                const initials = (currentUser.full_name || currentUser.email).slice(0, 2).toUpperCase();
+                document.getElementById('user-avatar').innerText = initials;
+                document.getElementById('user-name-lbl').innerText = currentUser.full_name || currentUser.email;
+                document.getElementById('user-role-lbl').innerText = currentUser.role;
+            }
+
+            renderLeaderboard();
+            renderDashboardRadar();
+            updateStats();
+            updateLastSync();
+            syncDatabaseLeaderboard();
+            resetFlowchartVisuals();
+            syncThemeIcons();
+        }
+
+        async function tryRestoreSession() {
+            if (!authToken) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!res.ok) {
+                    localStorage.removeItem('ezitech_token');
+                    authToken = null;
+                    return;
+                }
+                currentUser = await res.json();
+                showMainApp();
+            } catch (err) {
+                console.log("Session restore failed:", err);
+            }
+        }
+
+        async function authFetch(url, options = {}) {
+            options.headers = options.headers || {};
+            options.headers['Authorization'] = `Bearer ${authToken}`;
+            const res = await fetch(url, options);
+            if (res.status === 401 || res.status === 403) {
+                handleLogout();
+                showToast("Your session has expired. Please log in again.", "error");
+                throw new Error("Session expired");
+            }
+            return res;
+        }
+
+        const SCORE_FIELDS = [
+            { key: 'featureCompletion', label: 'Feature Completion' },
+            { key: 'codeQuality', label: 'Code Quality' },
+            { key: 'architecture', label: 'Architecture' },
+            { key: 'security', label: 'Security' },
+            { key: 'apiQuality', label: 'API Quality' },
+            { key: 'deploymentReadiness', label: 'Deployment Readiness' },
+            { key: 'engineeringMaturity', label: 'Engineering Maturity' }
+        ];
+
+        const VALIDATION_ITEMS = [
+            'Project Structure',
+            'Folder Organization',
+            'API Availability',
+            'Database Connectivity',
+            'Authentication Flow',
+            'Required Features',
+            'Error Handling',
+            'Security Configuration'
+        ];
+
+        function computeOverallScore(sub) {
+            const total = SCORE_FIELDS.reduce((sum, f) => sum + sub[f.key], 0);
+            return parseFloat((total / SCORE_FIELDS.length).toFixed(2));
+        }
+
+        function gradeFromScore(score) {
+            if (score >= 90) return 'A';
+            if (score >= 75) return 'B';
+            return 'C';
+        }
+
+        function buildTimeToSeconds(str) {
+            const match = str.match(/(\d+)m\s*(\d+)s/);
+            if (!match) return 9999;
+            return parseInt(match[1]) * 60 + parseInt(match[2]);
+        }
+
+        const MOCK_SUBMISSIONS = [];
+
+        async function syncDatabaseLeaderboard() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/leaderboard`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.length > 0) {
+                        const parsedRecords = data.map(record => mapBackendRecord(record));
+                        MOCK_SUBMISSIONS.length = 0;
+                        MOCK_SUBMISSIONS.push(...parsedRecords);
+                    }
+                }
+            } catch (err) {
+                console.log("Local backend offline. Running in local UI sandbox mode.", err);
+            }
+            renderLeaderboard();
+            renderDashboardRadar();
+            updateStats();
+        }
+
+        function mapBackendRecord(record) {
+            const sub = {
+                id: record.id,
+                repo_name: record.repo_name,
+                github_url: record.github_url,
+                stack: record.stack || "Unknown",
+                featureCompletion: record.feature_completion ?? 0,
+                codeQuality: record.code_quality ?? 0,
+                architecture: record.architecture ?? 0,
+                security: record.security ?? 0,
+                apiQuality: record.api_quality ?? 0,
+                deploymentReadiness: record.deployment_readiness ?? 0,
+                engineeringMaturity: record.engineering_maturity ?? 0,
+                documentationScore: record.documentation ?? 0,
+                performanceScore: record.performance ?? 0,
+                build_time: record.build_time || "0m 0s",
+                strengths: (record.strengths && record.strengths.length > 0)
+                    ? record.strengths
+                    : ["No specific strengths reported by the evaluation engine."],
+                weaknesses: (record.weaknesses && record.weaknesses.length > 0)
+                    ? record.weaknesses
+                    : ["No specific issues reported by the evaluation engine."],
+                tests: record.tests || { api: false, unit: false, db: false, integration: false, uismoke: false, performance: false },
+                structureChecks: record.structure_checks || null
+            };
+            sub.overallScore = record.overall_score ?? computeOverallScore(sub);
+            sub.grade = record.grade || gradeFromScore(sub.overallScore);
+            return sub;
+        }
+
+        let activeTab = 'dashboard';
+        let radarChartInstance = null;
+        let mainRadarInstance = null;
+
+        function updateLastSync() {
+            const el = document.getElementById('last-sync-lbl');
+            if (el) el.innerText = new Date().toLocaleTimeString();
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl border text-xs font-semibold shadow-panel-lg transition-all duration-300 transform translate-y-3 opacity-0 pointer-events-auto min-w-[280px]`;
+
+            let icon = 'fa-info-circle text-accent-600';
+            if (type === 'success') {
+                toast.classList.add('bg-surface', 'border-pass-100', 'text-pass-600');
+                icon = 'fa-circle-check text-pass-600';
+            } else if (type === 'error') {
+                toast.classList.add('bg-surface', 'border-fail-100', 'text-fail-600');
+                icon = 'fa-triangle-exclamation text-fail-600';
+            } else {
+                toast.classList.add('bg-surface', 'border-accent-100', 'text-ink-700');
+            }
+
+            toast.innerHTML = `<i class="fa-solid ${icon} text-sm"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => toast.classList.remove('translate-y-3', 'opacity-0'), 50);
+            setTimeout(() => {
+                toast.classList.add('translate-y-3', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-tab-btn').forEach(el => {
+                el.className = "nav-tab-btn w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] font-medium rounded-lg text-ink-400 hover:text-ink-700 hover:bg-canvas transition-all";
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const targetBtn = document.getElementById(`btn-${tabId}`);
+            targetBtn.className = "nav-tab-btn w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] font-medium rounded-lg text-accent-600 bg-accent-50 transition-all";
+
+            activeTab = tabId;
+
+            if (tabId === 'dashboard') renderDashboardRadar();
+            else if (tabId === 'telemetry') initTelemetryLineChart();
+            else if (tabId === 'leaderboard') renderCategoryLeaders();
+        }
+
+        function isValidGithubUrl(url) {
+            const pattern = /^https:\/\/github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(\.git)?\/?$/;
+            return pattern.test(url.trim());
+        }
+
+        function extractRepoPath(url) {
+            const pattern = /^https:\/\/github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(\.git)?\/?$/;
+            const match = url.trim().match(pattern);
+            if (!match) return null;
+            return { owner: match[1], repo: match[2] };
+        }
+
+        async function verifyGithubRepoExists(owner, repo) {
+            try {
+                const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
+                if (res.status === 200) {
+                    const data = await res.json();
+                    return { exists: true, data };
+                }
+                if (res.status === 404) return { exists: false, reason: 'not_found' };
+                return { exists: false, reason: 'api_error' };
+            } catch (err) {
+                console.log("GitHub verification network error:", err);
+                return { exists: false, reason: 'network_error' };
+            }
+        }
+
+        function clearUrlValidationState() {
+            const input = document.getElementById('targetUrl');
+            const msg = document.getElementById('url-validation-msg');
+            input.classList.remove('input-error', 'input-valid');
+            msg.classList.add('hidden');
+        }
+
+        function setUrlValidationState(state, message) {
+            const input = document.getElementById('targetUrl');
+            const msg = document.getElementById('url-validation-msg');
+            input.classList.remove('input-error', 'input-valid');
+            if (state === 'error') {
+                input.classList.add('input-error');
+                msg.className = "text-[10px] font-semibold mt-1 text-fail-600";
+            } else if (state === 'valid') {
+                input.classList.add('input-valid');
+                msg.className = "text-[10px] font-semibold mt-1 text-pass-600";
+            }
+            msg.innerText = message;
+            msg.classList.remove('hidden');
+        }
+
+        function resetValidationChecklist() {
+            const container = document.getElementById('validation-checklist');
+            container.innerHTML = VALIDATION_ITEMS.map((item, idx) => `
+                <div class="flex items-center justify-between text-xs font-medium" id="vcheck-${idx}">
+                    <span class="text-ink-600">${item}</span>
+                    <span class="check-pending"><i class="fa-solid fa-circle-notch"></i> Pending</span>
+                </div>
+            `).join('');
+        }
+
+        function runValidationChecklist() {
+            VALIDATION_ITEMS.forEach((item, idx) => {
+                setTimeout(() => {
+                    const el = document.getElementById(`vcheck-${idx}`);
+                    if (!el) return;
+                    el.querySelector('span:last-child').innerHTML = `<span class="check-pending"><i class="fa-solid fa-spinner fa-spin"></i> Checking...</span>`;
+                }, 300 + idx * 300);
+            });
+        }
+
+        function applyValidationChecklistResults(structureChecks) {
+            if (!structureChecks) return;
+            VALIDATION_ITEMS.forEach((item, idx) => {
+                if (item in structureChecks) {
+                    const el = document.getElementById(`vcheck-${idx}`);
+                    if (!el) return;
+                    const passed = structureChecks[item];
+                    el.querySelector('span:last-child').innerHTML = passed
+                        ? `<span class="check-passed"><i class="fa-solid fa-circle-check"></i> Verified</span>`
+                        : `<span class="check-failed"><i class="fa-solid fa-circle-xmark"></i> Needs Review</span>`;
+                }
+            });
+        }
+
+        function updateSVGNodeStatus(nodeIndex, status) {
+            const rect = document.getElementById(`node-${nodeIndex}`);
+            const line = document.getElementById(`line-${nodeIndex}`);
+            if (!rect) return;
+
+            if (status === 'active') {
+                const c = cssVar('--c-accent-600');
+                rect.setAttribute('fill', c);
+                rect.setAttribute('stroke', c);
+                rect.classList.add('node-active');
+                if (line) line.setAttribute('stroke', c);
+            } else if (status === 'passed') {
+                const c = cssVar('--c-pass-600');
+                rect.setAttribute('fill', c);
+                rect.setAttribute('stroke', c);
+                rect.classList.remove('node-active');
+                if (line) line.setAttribute('stroke', c);
+            } else {
+                rect.setAttribute('fill', cssVar('--c-surface'));
+                rect.setAttribute('stroke', cssVar('--c-line'));
+                rect.classList.remove('node-active');
+                if (line) line.setAttribute('stroke', cssVar('--c-line'));
+            }
+        }
+
+        function resetFlowchartVisuals() {
+            for (let i = 0; i <= 5; i++) updateSVGNodeStatus(i, 'idle');
+        }
+
+        async function triggerEvaluationPipeline() {
+            const inputField = document.getElementById('targetUrl');
+            const inputFieldVal = inputField.value.trim();
+            const runBtn = document.getElementById('run-pipeline-btn');
+
+            clearUrlValidationState();
+
+            if (!inputFieldVal) {
+                showToast("Please enter a GitHub repository link first.", "error");
+                setUrlValidationState('error', "This field cannot be empty.");
+                return;
+            }
+
+            if (!isValidGithubUrl(inputFieldVal)) {
+                showToast("Invalid link. Only a valid GitHub repository URL is accepted.", "error");
+                setUrlValidationState('error', "Invalid format. Correct format: https://github.com/owner/repo");
+                return;
+            }
+
+            const repoPath = extractRepoPath(inputFieldVal);
+
+            runBtn.disabled = true;
+            runBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Verifying with GitHub...`;
+            showToast("Verifying repository with GitHub...", "info");
+
+            const verification = await verifyGithubRepoExists(repoPath.owner, repoPath.repo);
+
+            runBtn.disabled = false;
+            runBtn.innerHTML = `<i class="fa-solid fa-terminal"></i> Start Evaluation`;
+
+            if (!verification.exists) {
+                setUrlValidationState('error', "This repository was not found on GitHub.");
+                if (verification.reason === 'not_found') {
+                    showToast("This repository does not exist on GitHub or is private. Only public repositories can be evaluated.", "error");
+                } else if (verification.reason === 'network_error') {
+                    showToast("Could not connect to GitHub. Please check your internet connection.", "error");
+                } else {
+                    showToast("GitHub verification failed at this time. Please try again.", "error");
+                }
+                return;
+            }
+
+            setUrlValidationState('valid', `Verified: ${verification.data.full_name}`);
+            showToast(`Repository verified: ${verification.data.full_name}`, "success");
+
+            const backendCallPromise = authFetch(`${API_BASE}/api/v1/evaluate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ github_url: inputFieldVal })
+            })
+            .then(async res => {
+                const body = await res.json().catch(() => null);
+                if (!res.ok) {
+                    const detail = (body && body.detail) ? body.detail : `Evaluation failed with status ${res.status}`;
+                    throw new Error(detail);
+                }
+                return body;
+            });
+
+            switchTab('pipeline');
+
+            const terminal = document.getElementById('terminal-screen');
+            const statusBadge = document.getElementById('pipeline-status-badge');
+
+            terminal.innerHTML = "";
+            resetFlowchartVisuals();
+            resetValidationChecklist();
+            runValidationChecklist();
+            startResourceTelemetry();
+
+            statusBadge.innerText = "Compiling Sandbox";
+            statusBadge.className = "bg-accent-50 text-accent-600 text-[9px] font-mono font-semibold px-2.5 py-1 rounded-full border border-accent-100 uppercase tracking-wider";
+
+            const sourceLabel = verification.data.full_name;
+
+            let stepLogs = [
+                [
+                    "&gt; [SYSTEM] Spawning isolated evaluation workspace...",
+                    "&gt; [DOCKER] Building container on virtual Linux base image...",
+                    `&gt; [GIT CLONE] Cloning verified target: ${sourceLabel}`,
+                    "&gt; [GIT CLONE] Verifying repository payload integrity...",
+                    `&gt; [GIT CLONE] Clone successful. Default branch: ${verification.data.default_branch || 'main'}.`
+                ],
+                [
+                    "&gt; [ENV CONTEXT] Parsing project dependency manifest...",
+                    "&gt; [DOCKER BUILD] Initializing build configuration...",
+                    "&gt; [DOCKER BUILD] Installing detected framework dependencies...",
+                    "&gt; [DOCKER BUILD] Environment container built successfully. Exit code 0."
+                ],
+                [
+                    "&gt; [CONTAINERS] Launching application container...",
+                    "&gt; [DATABASE] Provisioning isolated database instance...",
+                    "&gt; [DATABASE] Running mock migrations and seed data...",
+                    "&gt; [AUTH] Verifying authentication handshake...",
+                    "&gt; [AUTH] Handshake validated successfully."
+                ],
+                [
+                    "&gt; [TEST RUNNER] Executing unit test suite...",
+                    "&gt; [TEST RUNNER] Executing integration test suite...",
+                    "&gt; [API CHECK] [PASSED] GET /api/v1/status [200]",
+                    "&gt; [API CHECK] [PASSED] POST /api/v1/resource [201]",
+                    "&gt; [TEST RUNNER] Running UI smoke tests...",
+                    "&gt; [TEST RUNNER] Running performance checks..."
+                ],
+                [
+                    "&gt; [SECURITY] Running static vulnerability scan...",
+                    "&gt; [SECURITY] Checking for exposed secrets in environment files...",
+                    "&gt; [SECURITY] Checking authorization boundaries on endpoints...",
+                    "&gt; [SECURITY] Generating security report..."
+                ],
+                [
+                    "&gt; [TEARDOWN] Destroying isolated container and database...",
+                    "&gt; [TEARDOWN] Workspace flushed. Logs processed.",
+                    "&gt; [SYSTEM] Pipeline complete. Scorecard generated."
+                ]
+            ];
+
+            let currentStep = 0;
+            let logIndex = 0;
+
+            function printNextLog() {
+                if (currentStep >= stepLogs.length) {
+                    backendCallPromise
+                        .then(response => {
+                            if (response && (response.status === 'success' || response.status === 'already_evaluated')) {
+                                finalizeEvaluationRun(sourceLabel, inputFieldVal, response.data, null);
+                            } else {
+                                finalizeEvaluationRun(sourceLabel, inputFieldVal, null, "Backend returned an unexpected response.");
+                            }
+                        })
+                        .catch(err => {
+                            finalizeEvaluationRun(sourceLabel, inputFieldVal, null, err.message);
+                        });
+                    return;
+                }
+
+                updateSVGNodeStatus(currentStep, 'active');
+
+                if (logIndex < stepLogs[currentStep].length) {
+                    const line = document.createElement('p');
+                    line.innerHTML = stepLogs[currentStep][logIndex];
+
+                    if (line.innerText.includes('[PASSED]')) line.className = 'text-pass-600 font-semibold';
+                    else if (line.innerText.includes('[SYSTEM]')) line.className = 'text-ink-400';
+                    else if (line.innerText.includes('[DATABASE]')) line.className = 'text-accent-500';
+                    else if (line.innerText.includes('[SECURITY]')) line.className = 'text-warn-600';
+                    else line.className = 'text-ink-300';
+
+                    terminal.appendChild(line);
+                    terminal.scrollTop = terminal.scrollHeight;
+                    logIndex++;
+                    setTimeout(printNextLog, 250);
+                } else {
+                    updateSVGNodeStatus(currentStep, 'passed');
+                    currentStep++;
+                    logIndex = 0;
+                    setTimeout(printNextLog, 600);
+                }
+            }
+
+            printNextLog();
+        }
+
+        function finalizeEvaluationRun(repoFullName, githubUrl, backendRecord, errorMessage) {
+            const statusBadge = document.getElementById('pipeline-status-badge');
+
+            if (!backendRecord) {
+                statusBadge.innerText = "Evaluation Failed";
+                statusBadge.className = "bg-fail-100 text-fail-600 text-[9px] font-mono font-semibold px-2.5 py-1 rounded-full border border-fail-100 uppercase tracking-wider";
+                if (errorMessage !== "Session expired") {
+                    showToast(errorMessage || "Evaluation failed. Please check the backend logs.", "error");
+                }
+                stopResourceTelemetry();
+                return;
+            }
+
+            statusBadge.innerText = "System Stable";
+            statusBadge.className = "bg-white/5 text-ink-300 text-[9px] font-mono font-semibold px-2.5 py-1 rounded-full border border-white/10 uppercase tracking-wider";
+
+            const finalRecordObj = mapBackendRecord(backendRecord);
+
+            if (finalRecordObj.structureChecks) {
+                applyValidationChecklistResults(finalRecordObj.structureChecks);
+            }
+
+            const existingIndex = MOCK_SUBMISSIONS.findIndex(s => s.github_url === finalRecordObj.github_url);
+            if (existingIndex !== -1) MOCK_SUBMISSIONS[existingIndex] = finalRecordObj;
+            else MOCK_SUBMISSIONS.push(finalRecordObj);
+
+            renderLeaderboard();
+            renderDashboardRadar();
+            updateStats();
+
+            showToast("Evaluation complete. Scorecard generated.", "success");
+
+            viewReport(finalRecordObj.id);
+            switchTab('reports');
+
+            document.getElementById('targetUrl').value = "";
+            clearUrlValidationState();
+
+            stopResourceTelemetry();
+        }
+
+        let telemetryInterval = null;
+        let telemetryChart = null;
+        let telemetryLabels = [];
+        let cpuDataPoints = [];
+        let ramDataPoints = [];
+
+        function initTelemetryLineChart() {
+            const ctx = document.getElementById('telemetryLineChart').getContext('2d');
+            if (telemetryChart) telemetryChart.destroy();
+
+            telemetryLabels = Array.from({length: 12}, (_, i) => `${i*2}s ago`).reverse();
+            cpuDataPoints = Array.from({length: 12}, () => 0);
+            ramDataPoints = Array.from({length: 12}, () => 0);
+
+            telemetryChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: telemetryLabels,
+                    datasets: [
+                        { label: 'CPU (%)', data: cpuDataPoints, borderColor: cssVar('--c-accent-600'), backgroundColor: cssVarAlpha('--c-accent-600', 0.10), borderWidth: 2, tension: 0.3, fill: true },
+                        { label: 'RAM (%)', data: ramDataPoints, borderColor: cssVar('--c-pass-600'), backgroundColor: cssVarAlpha('--c-pass-600', 0.10), borderWidth: 2, tension: 0.3, fill: true }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: cssVar('--c-ink-600'), font: { size: 10 } } } },
+                    scales: {
+                        x: { ticks: { color: cssVar('--c-ink-400'), font: { size: 9 } }, grid: { color: cssVarAlpha('--c-line', 0.6) } },
+                        y: { min: 0, max: 100, ticks: { color: cssVar('--c-ink-400'), font: { size: 9 } }, grid: { color: cssVarAlpha('--c-line', 0.6) } }
+                    }
+                }
+            });
+
+            startResourceTelemetry();
+        }
+
+        function startResourceTelemetry() {
+            if (telemetryInterval) clearInterval(telemetryInterval);
+            telemetryInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(`${API_BASE}/api/v1/system-stats`);
+                    if (!res.ok) return;
+                    const stats = await res.json();
+
+                    const cpuLbl = document.getElementById('cpu-lbl');
+                    const ramLbl = document.getElementById('ram-lbl');
+                    const netLbl = document.getElementById('net-lbl');
+                    if (cpuLbl) cpuLbl.innerText = `${stats.cpu_percent}%`;
+                    if (ramLbl) ramLbl.innerText = `${Math.round(stats.mem_used_mb)} MB`;
+                    if (netLbl) netLbl.innerText = `${stats.network_kbps} KB/s`;
+
+                    if (telemetryChart) {
+                        cpuDataPoints.push(stats.cpu_percent);
+                        cpuDataPoints.shift();
+                        ramDataPoints.push(stats.mem_percent);
+                        ramDataPoints.shift();
+                        telemetryChart.update('none');
+                    }
+                } catch (err) {
+                    console.log("System stats fetch failed:", err);
+                }
+            }, 1000);
+        }
+
+        function stopResourceTelemetry() {
+            if (telemetryInterval) {
+                clearInterval(telemetryInterval);
+                telemetryInterval = null;
+            }
+        }
+
+        function triggerForensicVerification() {
+            showToast("Forensic similarity scan started...", "info");
+            setTimeout(() => {
+                showToast("Scan complete. Code uniqueness verified at 99.8%.", "success");
+            }, 1500);
+        }
+
+        function renderLeaderboard() {
+            const body = document.getElementById('leaderboard-table-body');
+            const selectedTech = document.getElementById('lead-tech').value;
+            body.innerHTML = '';
+
+            let sortedData = [...MOCK_SUBMISSIONS].sort((a, b) => b.overallScore - a.overallScore);
+            if (selectedTech !== 'all') sortedData = sortedData.filter(item => item.stack === selectedTech);
+
+            if (sortedData.length === 0) {
+                body.innerHTML = `<tr><td colspan="9" class="py-10 text-center text-ink-400 text-xs">No evaluations yet. Submit a GitHub repository from the Control Room to get started.</td></tr>`;
+                return;
+            }
+
+            sortedData.forEach((row, index) => {
+                const rank = index + 1;
+                let badge = `<span class="text-ink-400 font-mono font-bold">${rank}</span>`;
+                if (rank === 1) badge = `<span class="text-sm">🥇</span>`;
+                else if (rank === 2) badge = `<span class="text-sm">🥈</span>`;
+                else if (rank === 3) badge = `<span class="text-sm">🥉</span>`;
+
+                let gradeColor = 'text-pass-600 bg-pass-100';
+                if (row.grade === 'B') gradeColor = 'text-accent-600 bg-accent-100';
+                if (row.grade === 'C') gradeColor = 'text-warn-600 bg-warn-100';
+
+                body.innerHTML += `
+                    <tr class="hover:bg-canvas transition-colors">
+                        <td class="py-3.5 px-5 text-center text-sm">${badge}</td>
+                        <td class="py-3.5 px-5">
+                            <div class="font-semibold text-ink-900 text-[11px]">${row.repo_name}</div>
+                            <a href="${row.github_url}" target="_blank" class="text-[10px] text-accent-600 hover:underline font-mono block truncate max-w-xs">${row.github_url}</a>
+                        </td>
+                        <td class="py-3.5 px-3 text-center">
+                            <span class="px-2 py-1 rounded-full text-[9px] font-semibold uppercase tracking-wide bg-canvas border border-line text-ink-600">${row.stack}</span>
+                        </td>
+                        <td class="py-3.5 px-3 text-center font-mono text-ink-600">${row.architecture.toFixed(1)}%</td>
+                        <td class="py-3.5 px-3 text-center font-mono text-ink-600">${row.security.toFixed(1)}%</td>
+                        <td class="py-3.5 px-3 text-center font-mono text-ink-600">${row.build_time}</td>
+                        <td class="py-3.5 px-3 text-center font-mono font-bold text-accent-600">${row.overallScore.toFixed(1)}%</td>
+                        <td class="py-3.5 px-3 text-center">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${gradeColor}">${row.grade}</span>
+                        </td>
+                        <td class="py-3.5 px-5 text-center">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <button onclick="viewReport(${row.id})" class="bg-accent-50 hover:bg-accent-600 text-accent-600 hover:text-white border border-accent-100 font-semibold px-2.5 py-1.5 rounded-lg text-[9px] transition-all flex items-center gap-1 uppercase tracking-wide">
+                                    <i class="fa-solid fa-file-invoice"></i> Inspect
+                                </button>
+                                <button onclick="triggerReevaluation(${row.id})" class="bg-canvas hover:bg-line text-ink-500 border border-line font-semibold p-1.5 rounded-lg text-[9px] transition-all" title="Re-run this repository">
+                                    <i class="fa-solid fa-arrows-rotate"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            renderCategoryLeaders();
+        }
+
+        function renderCategoryLeaders() {
+            const container = document.getElementById('category-leaders-row');
+            if (!container) return;
+
+            if (MOCK_SUBMISSIONS.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center text-xs text-ink-400 py-4">No evaluations yet — category leaders will appear here once repositories are evaluated.</div>`;
+                return;
+            }
+
+            const highestScore = [...MOCK_SUBMISSIONS].sort((a, b) => b.overallScore - a.overallScore)[0];
+            const fastestBuild = [...MOCK_SUBMISSIONS].sort((a, b) => buildTimeToSeconds(a.build_time) - buildTimeToSeconds(b.build_time))[0];
+            const bestArchitecture = [...MOCK_SUBMISSIONS].sort((a, b) => b.architecture - a.architecture)[0];
+            const bestApiDesign = [...MOCK_SUBMISSIONS].sort((a, b) => b.apiQuality - a.apiQuality)[0];
+            const bestDocumentation = [...MOCK_SUBMISSIONS].sort((a, b) => b.documentationScore - a.documentationScore)[0];
+            const bestPerformance = [...MOCK_SUBMISSIONS].sort((a, b) => b.performanceScore - a.performanceScore)[0];
+
+            const cards = [
+                { label: 'Highest Score', icon: 'fa-star', color: 'text-accent-600', value: highestScore.repo_name, sub: `${highestScore.overallScore.toFixed(1)}%` },
+                { label: 'Fastest Build', icon: 'fa-bolt', color: 'text-warn-600', value: fastestBuild.repo_name, sub: fastestBuild.build_time },
+                { label: 'Best Architecture', icon: 'fa-sitemap', color: 'text-accent-600', value: bestArchitecture.repo_name, sub: `${bestArchitecture.architecture.toFixed(1)}%` },
+                { label: 'Best API Design', icon: 'fa-plug', color: 'text-pass-600', value: bestApiDesign.repo_name, sub: `${bestApiDesign.apiQuality.toFixed(1)}%` },
+                { label: 'Best Documentation', icon: 'fa-book', color: 'text-fail-600', value: bestDocumentation.repo_name, sub: `${bestDocumentation.documentationScore.toFixed(1)}%` },
+                { label: 'Best Performance', icon: 'fa-gauge', color: 'text-accent-600', value: bestPerformance.repo_name, sub: `${bestPerformance.performanceScore.toFixed(1)}%` }
+            ];
+
+            container.innerHTML = cards.map(c => `
+                <div class="bg-surface p-3.5 rounded-2xl border border-line shadow-panel">
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <i class="fa-solid ${c.icon} ${c.color} text-xs"></i>
+                        <span class="text-[8px] font-semibold text-ink-400 uppercase tracking-wide">${c.label}</span>
+                    </div>
+                    <div class="text-[11px] font-semibold text-ink-900 truncate">${c.value}</div>
+                    <div class="text-[10px] font-mono ${c.color} font-bold">${c.sub}</div>
+                </div>
+            `).join('');
+        }
+
+        function triggerReevaluation(id) {
+            const item = MOCK_SUBMISSIONS.find(sub => sub.id === id);
+            if (item) {
+                document.getElementById('targetUrl').value = item.github_url;
+                showToast(`Re-evaluating: ${item.repo_name}...`, "info");
+                triggerEvaluationPipeline();
+            }
+        }
+
+        function exportLeaderboardData(type) {
+            let dataStr = "";
+            if (type === 'json') {
+                dataStr = JSON.stringify(MOCK_SUBMISSIONS, null, 2);
+                showToast("JSON export generated.", "success");
+            } else {
+                dataStr = "Rank,Repository,Stack,Overall Score,Grade,Build Time\n" +
+                    MOCK_SUBMISSIONS.map((s, i) => `${i+1},${s.repo_name},${s.stack},${s.overallScore}%,${s.grade},${s.build_time}`).join("\n");
+                showToast("CSV export generated.", "success");
+            }
+            console.log("Export payload:\n", dataStr);
+        }
+
+        function viewReport(id) {
+            const item = MOCK_SUBMISSIONS.find(sub => sub.id === id);
+            if (!item) return;
+            window.__lastViewedReportId = id;
+
+            document.getElementById('report-empty-state').classList.add('hidden');
+            document.getElementById('report-active-container').classList.remove('hidden');
+
+            document.getElementById('report-repo-name').innerText = item.repo_name;
+            const urlEl = document.getElementById('report-repo-url');
+            urlEl.href = item.github_url;
+            urlEl.innerText = item.github_url;
+
+            document.getElementById('report-grade').innerText = item.grade;
+            document.getElementById('report-overall').innerText = `${item.overallScore.toFixed(1)}%`;
+
+            setupCheckBadge('chk-api', item.tests.api);
+            setupCheckBadge('chk-unit', item.tests.unit);
+            setupCheckBadge('chk-db', item.tests.db);
+            setupCheckBadge('chk-integration', item.tests.integration);
+            setupCheckBadge('chk-uismoke', item.tests.uismoke);
+            setupCheckBadge('chk-performance', item.tests.performance);
+
+            const scoreBars = document.getElementById('score-bars-container');
+            scoreBars.innerHTML = SCORE_FIELDS.map(f => {
+                const val = item[f.key];
+                return `
+                    <div>
+                        <div class="flex justify-between text-[10px] font-semibold text-ink-500 mb-1">
+                            <span>${f.label}</span>
+                            <span class="font-mono text-ink-700">${val.toFixed(1)}%</span>
+                        </div>
+                        <div class="w-full bg-canvas rounded-full h-1.5 border border-line">
+                            <div class="bg-accent-600 h-1.5 rounded-full" style="width:${val}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const strengthsUl = document.getElementById('feedback-strengths');
+            strengthsUl.innerHTML = '';
+            item.strengths.forEach(str => {
+                strengthsUl.innerHTML += `<li class="flex items-start gap-2"><i class="fa-solid fa-square-check text-pass-600 mt-0.5 text-[10px]"></i> <span>${str}</span></li>`;
+            });
+
+            const weaknessesUl = document.getElementById('feedback-weaknesses');
+            weaknessesUl.innerHTML = '';
+            item.weaknesses.forEach(weak => {
+                weaknessesUl.innerHTML += `<li class="flex items-start gap-2"><i class="fa-solid fa-triangle-exclamation text-fail-600 mt-0.5 text-[10px]"></i> <span>${weak}</span></li>`;
+            });
+
+            switchTab('reports');
+            renderRadarScorecard(item);
+        }
+
+        function setupCheckBadge(elementId, passed) {
+            const el = document.getElementById(elementId);
+            if (passed) {
+                el.innerText = "PASSED";
+                el.className = "bg-pass-100 text-pass-600 px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide border border-pass-100 shrink-0 font-mono";
+            } else {
+                el.innerText = "FAILED";
+                el.className = "bg-fail-100 text-fail-600 px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide border border-fail-100 shrink-0 font-mono";
+            }
+        }
+
+        function filterLeaderboard() {
+            renderLeaderboard();
+        }
+
+        function updateStats() {
+            const total = MOCK_SUBMISSIONS.length;
+            document.getElementById('stat-evaluations').innerText = total;
+
+            const sumScore = MOCK_SUBMISSIONS.reduce((sum, item) => sum + item.overallScore, 0);
+            const avgScore = total > 0 ? (sumScore / total).toFixed(2) : "0.00";
+            document.getElementById('stat-avg-score').innerText = `${avgScore}%`;
+
+            const activeWorkers = Math.min(total + 3, 20);
+            document.getElementById('stat-workers').innerText = `0${activeWorkers} / 20`;
+        }
+
+        function renderRadarScorecard(item) {
+            const ctx = document.getElementById('radarScorechart').getContext('2d');
+            if (radarChartInstance) radarChartInstance.destroy();
+
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: SCORE_FIELDS.map(f => f.label),
+                    datasets: [{
+                        label: 'Score (%)',
+                        data: SCORE_FIELDS.map(f => item[f.key]),
+                        backgroundColor: cssVarAlpha('--c-accent-600', 0.12),
+                        borderColor: cssVar('--c-accent-600'),
+                        pointBackgroundColor: cssVar('--c-accent-600'),
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    layout: { padding: 18 },
+                    scales: {
+                        r: {
+                            angleLines: { color: cssVarAlpha('--c-line', 0.8) },
+                            grid: { color: cssVarAlpha('--c-line', 0.8) },
+                            pointLabels: { color: cssVar('--c-ink-600'), font: { size: 8 } },
+                            ticks: { display: false },
+                            min: 0, max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderDashboardRadar() {
+            const ctx = document.getElementById('dashboardRadar').getContext('2d');
+            const topSubmissions = [...MOCK_SUBMISSIONS].sort((a, b) => b.overallScore - a.overallScore).slice(0, 3);
+
+            const colors = [
+                { border: cssVar('--c-accent-600'), bg: cssVarAlpha('--c-accent-600', 0.08) },
+                { border: cssVar('--c-pass-600'), bg: cssVarAlpha('--c-pass-600', 0.08) },
+                { border: cssVar('--c-violet-600'), bg: cssVarAlpha('--c-violet-600', 0.08) }
+            ];
+
+            const datasets = topSubmissions.map((sub, idx) => ({
+                label: sub.repo_name,
+                data: SCORE_FIELDS.map(f => sub[f.key]),
+                borderColor: colors[idx].border,
+                backgroundColor: colors[idx].bg,
+                borderWidth: 2,
+                pointBackgroundColor: colors[idx].border
+            }));
+
+            if (mainRadarInstance) mainRadarInstance.destroy();
+
+            mainRadarInstance = new Chart(ctx, {
+                type: 'radar',
+                data: { labels: SCORE_FIELDS.map(f => f.label), datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: cssVar('--c-ink-600'), font: { size: 10 } } } },
+                    layout: { padding: 16 },
+                    scales: {
+                        r: {
+                            angleLines: { color: cssVarAlpha('--c-line', 0.8) },
+                            grid: { color: cssVarAlpha('--c-line', 0.8) },
+                            pointLabels: { color: cssVar('--c-ink-600'), font: { size: 9 } },
+                            ticks: { display: false },
+                            min: 0, max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            tryRestoreSession();
+        });
+    </script>
+</body>
+</html>

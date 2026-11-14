@@ -19,3 +19,6 @@ double[][] A = new double[N][N];
 
 // Create second matrix
 double[][] B = new double[N][N];
+
+// Create result matrix
+double[][] C = new double[N][N];

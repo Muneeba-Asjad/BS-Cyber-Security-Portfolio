@@ -13,3 +13,6 @@ int N = 2048;
 
 // Define block size
 int BLOCK_SIZE = 64;
+
+// Create first matrix
+double[][] A = new double[N][N];

@@ -1,0 +1,10 @@
+streamlit
+pandas
+numpy
+scikit-learn
+nltk
+SpeechRecognition
+matplotlib
+seaborn
+streamlit-mic-recorder
+pydub

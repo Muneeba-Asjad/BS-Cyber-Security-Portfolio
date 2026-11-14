@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NLP Transformer System</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .container {
+            background: white;
+            width: 600px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px gray;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        textarea {
+            width: 90%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 12px 25px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-radius: 8px;
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="container">
+
+        <h1>🤖 NLP Transformer System</h1>
+
+        <p>
+            Sentiment Analysis using Fine-Tuned Transformer Model
+        </p>
+
+
+        <form method="POST">
+
+            <textarea name="text" rows="5" placeholder="Enter your text here..." required>{{ text }}</textarea>
+
+
+            <br>
+
+            <button type="submit">
+                Analyze
+            </button>
+
+        </form>
+
+
+        {% if prediction %}
+
+        <div class="result">
+
+            <h2>Prediction Result</h2>
+
+            <p>
+                <b>Label:</b> {{ prediction }}
+            </p>
+
+
+            <p>
+                <b>Confidence:</b> {{ confidence }} %
+            </p>
+
+
+        </div>
+
+        {% endif %}
+
+
+    </div>
+
+
+</body>
+
+</html>
